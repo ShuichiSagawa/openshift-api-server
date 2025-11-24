@@ -4,8 +4,13 @@ import socket
 from datetime import datetime
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from prometheus_flask_exporter import PrometheusMetrics
 
 app = Flask(__name__)
+metrics = PrometheusMetrics(app)
+
+# カスタムメトリクス
+metrics.info('app_info', 'Application info', version='2.0', service='api-server')
 
 DB_HOST = os.getenv('DB_HOST', 'postgresql')
 DB_PORT = os.getenv('DB_PORT', '5432')
@@ -49,6 +54,11 @@ def info():
         'database': f'{DB_HOST}:{DB_PORT}/{DB_NAME}',
         'timestamp': datetime.utcnow().isoformat()
     })
+
+@app.route('/metrics')
+def prometheus_metrics():
+    # prometheus_flask_exporterが自動的に/metricsを提供
+    pass
 
 @app.route('/api/items', methods=['GET'])
 def get_items():
